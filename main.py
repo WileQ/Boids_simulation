@@ -2,12 +2,16 @@ import pygame
 import random
 import math
 
+
 pygame.init()
 
 
 WIDTH, HEIGHT = 800, 600
 MAX_SPEED = 2
 MAX_ACCELERATION = 0.03
+aCoef = 0.3
+sCoef = 0.5
+cCoef = 0.5
 screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.DOUBLEBUF)
 pygame.display.set_caption("Boids")
 
@@ -44,12 +48,11 @@ class Boid:
         self.update_angle()
         self.update_position()
 
-        self.update_acceeration(self.cohesion(boids))
-        self.update_acceeration(self.separation(boids))
-        self.update_acceeration(self.alignment(boids))
+        self.alignment(boids)
+        self.separation(boids)
+        self.cohesion(boids)
 
         points = self.points
-
         self.update_velocity()
         self.center = pygame.Vector2(self.circumcenter(points[0][0], points[0][1], points[1][0], points[1][1], points[2][0], points[2][1]))
 
@@ -57,6 +60,7 @@ class Boid:
         points = self.points
         velocity = self.velocity
         self.points = ((points[0][0] + velocity[0], points[0][1] + velocity[1]), (points[1][0] + velocity[0], points[1][1] + velocity[1]), (points[2][0] + velocity[0],points[2][1] + velocity[1]))
+
 
     def update_angle(self):
         points = self.points
@@ -110,7 +114,7 @@ class Boid:
         return (center_x, center_y)
 
     def distance(self, vector1, vector2):
-         return math.dist(vector1, vector2)
+        return math.dist(vector1, vector2)
 
     def get_center(self):
         return self.center
@@ -127,11 +131,11 @@ class Boid:
 
         if counter != 0:
             influence_vector /= counter
-
-            influence_vector -= self.velocity
-
-
-        return influence_vector
+            influence_vector.scale_to_length(MAX_SPEED)
+            force = influence_vector - self.velocity
+            force.scale_to_length(MAX_ACCELERATION)
+            force *= aCoef
+            self.acceleration += force
 
     def separation(self, boids):
         perception = 40
@@ -148,13 +152,15 @@ class Boid:
 
         if counter > 0:
             influence_vector /= counter
+            influence_vector.scale_to_length(MAX_SPEED)
+            force = influence_vector - self.velocity
+            force.scale_to_length(MAX_ACCELERATION)
+            force *= sCoef
+            self.acceleration += force
 
-
-        return influence_vector
 
     def cohesion(self, boids):
         perception_radius = 100
-        influence_vector = pygame.Vector2(0, 0)
         counter = 0
         center_of_mass = pygame.Vector2(0, 0)
 
@@ -166,11 +172,13 @@ class Boid:
         if counter > 0:
             center_of_mass /= counter
             desired = center_of_mass - self.center
+            desired.scale_to_length(MAX_SPEED)
+            force = desired - self.velocity
+            force.scale_to_length(MAX_ACCELERATION)
+            force *= cCoef
+            self.acceleration += force
 
-            influence_vector = desired - self.velocity
 
-
-        return influence_vector
 
     def show(self, screen):
         pygame.draw.polygon(screen, self.color, self.points)
@@ -178,7 +186,6 @@ class Boid:
 
 
 running = True
-
 boids = [Boid() for _ in range(50)]
 while running:
     for event in pygame.event.get():
@@ -194,5 +201,4 @@ while running:
     pygame.display.flip()
     pygame.time.Clock().tick(60)
 
-# Quit Pygame
 pygame.quit()
