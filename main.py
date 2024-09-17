@@ -7,8 +7,8 @@ pygame.init()
 
 
 WIDTH, HEIGHT = 800, 600
-MAX_SPEED = 2
-MAX_ACCELERATION = 0.03
+MAX_SPEED = 3
+MAX_ACCELERATION = 0.01
 aCoef = 0.3
 sCoef = 0.5
 cCoef = 0.5
@@ -138,7 +138,7 @@ class Boid:
             self.acceleration += force
 
     def separation(self, boids):
-        perception = 40
+        perception = 100
         influence_vector = pygame.Vector2(0, 0)
         counter = 0
 
