@@ -13,7 +13,11 @@ Clone the repository:
 git clone https://github.com/WileQ/Boids_simulation.git
 cd Boids_simulation
 ```
+Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 Run it:
 ```bash
-python Boids_simulation.py
+python main.py
 ```
